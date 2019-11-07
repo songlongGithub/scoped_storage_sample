@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name='scoped_storage_sample'
