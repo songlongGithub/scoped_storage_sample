@@ -540,6 +540,19 @@ values.put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/sl/sl2")
 contentResolver.update(insertUri,values,null,null)
 ```
 
+## 4 sample
+[sample Github地址](https://github.com/songlongGithub/scoped_storage_sample)
+
 其中AndroidQActivity.kt 中有MediaStore的操作示例
 
 StorageAccessFrameworkActivity.kt 有SAF的操作示例
+
+[uTakePhoto](https://github.com/songlongGithub/uTakePhoto)是Android上一行调用拍照/选择图片，裁剪，压缩，适配androidQ，里面有丰富的处理图片的适配解决方案，欢迎start
+
+**特别鸣谢**
+
+[oppo AndroidQ适配指导](https://open.oppomobile.com/wiki/doc#id=10432)
+
+华为 AndroidQ适配指导
+
+其他项适配方案可参考 [oppo AndroidQ适配指导](https://open.oppomobile.com/wiki/doc#id=10432)
