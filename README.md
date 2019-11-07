@@ -21,8 +21,8 @@ Android Q规定了APP有两种外部存储空间视图模式：Legacy View、Fil
 在AndroidQ上，target SDK大于或等于29的APP默认被赋予Filtered View。APP可以在AndroidManifest.xml中设置requestLegacyExternalStorage来修改外部存储空间视图模式，true为Legacy View，false为Filtered View。
 
 ```
-    //默认是false，也就是Filtered View
-    android:requestLegacyExternalStorage="true"
+//默认是false，也就是Filtered View
+android:requestLegacyExternalStorage="true"
 ```
 可以通过Environment.isExternalStorageLegacy()方法判断运行模式。
 
@@ -121,31 +121,29 @@ https://developer.android.google.cn/preview/privacy/scoped-storage
 创建文件
 
 ```
-            val documents = getExternalFilesDirs(Environment.DIRECTORY_DOCUMENTS)
-            if (documents.isNotEmpty()) {
-                val dir = documents[0]
-                var os: FileOutputStream? = null
-                try {
-                    val newFile = File(dir.absolutePath, "MyDocument")
-                    os = FileOutputStream(newFile)
-                    os.write("create a file".toByteArray(Charsets.UTF_8))
-                    os.flush()
-                    Log.d(TAG, "创建成功")
-                    dir.listFiles()?.forEach { file: File? ->
-                        if (file != null) {
-                            Log.d(TAG, "Documents 目录下的文件名：" + file.name)
-                        }
-                    }
-
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                    Log.d(TAG, "创建失败")
-
-                } finally {
-                    closeIO(os)
+    val documents = getExternalFilesDirs(Environment.DIRECTORY_DOCUMENTS)
+    if (documents.isNotEmpty()) {
+        val dir = documents[0]
+        var os: FileOutputStream? = null
+        try {
+            val newFile = File(dir.absolutePath, "MyDocument")
+            os = FileOutputStream(newFile)
+            os.write("create a file".toByteArray(Charsets.UTF_8))
+            os.flush()
+            Log.d(TAG, "创建成功")
+            dir.listFiles()?.forEach { file: File? ->
+                if (file != null) {
+                    Log.d(TAG, "Documents 目录下的文件名：" + file.name)
                 }
-
             }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Log.d(TAG, "创建失败")
+        } finally {
+            closeIO(os)
+        }
+
+    }
 ```
 
 ## 3.2 使用MediaStore访问公共目录
@@ -160,44 +158,44 @@ MediaStore提供下列Uri，可以用MediaProvider查询对应的Uri数据
 
 ```
     MediaStore.getExternalVolumeNames(this).forEach { volumeName ->
-            Log.d(TAG, "uri：${MediaStore.Images.Media.getContentUri(volumeName)}")
-        }
+        Log.d(TAG, "uri：${MediaStore.Images.Media.getContentUri(volumeName)}")
+    }
 ```
 MediaProvider
 通过ContentResolver.insert（uri）方法中的uri确定存放路径。Uri路径格式：
-`content://media/<volumeName>/<Uri路径>`，下表对应Uri路径为相对路径
+`content://       media/<volumeName>/<Uri路径>`，下表对应Uri路径为相对路径
 
 ![表二](https://user-gold-cdn.xitu.io/2019/11/6/16e405d78f36adca?w=1430&h=1062&f=png&s=364130)
 ### 3.2.2 使用MediaStore创建文件
 通过ContentResolver的insert方法，将多媒体文件保存在公共集合目录，不同的Uri对应不同的公共目录，详见3.2.1；其中RELATIVE_PATH的一级目录必须是Uri对应的一级目录，二级目录或者二级以上的目录，可以随意的创建和指定
 
 ```
-        val values = ContentValues()
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, "Image.png")
-        values.put(MediaStore.Images.Media.DESCRIPTION, "This is an image")
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-        values.put(MediaStore.Images.Media.TITLE, "Image.png")
-        values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/sl")
-        val external = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val insertUri = contentResolver.insert(external, values)
-        var os: OutputStream? = null
-        try {
-            if (insertUri != null) {
-                os = contentResolver.openOutputStream(insertUri)
-            }
-            if (os != null) {
-                val bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888)
-                //创建了一个红色的图片
-                val canvas = Canvas(bitmap)
-                canvas.drawColor(Color.RED)
-                bitmap.compress(Bitmap.CompressFormat.PNG, 90, os)
-                Log.d(TAG, "创建Bitmap成功")
-            }
-        } catch (e: IOException) {
-            Log.d(TAG, "创建失败：${e.message}")
-        } finally {
-            closeIO(os)
+    val values = ContentValues()
+    values.put(MediaStore.Images.Media.DISPLAY_NAME, "Image.png")
+    values.put(MediaStore.Images.Media.DESCRIPTION, "This is an image")
+    values.put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+    values.put(MediaStore.Images.Media.TITLE, "Image.png")
+    values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/sl")
+    val external = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    val insertUri = contentResolver.insert(external, values)
+    var os: OutputStream? = null
+    try {
+        if (insertUri != null) {
+            os = contentResolver.openOutputStream(insertUri)
         }
+        if (os != null) {
+            val bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888)
+            //创建了一个红色的图片
+            val canvas = Canvas(bitmap)
+            canvas.drawColor(Color.RED)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 90, os)
+            Log.d(TAG, "创建Bitmap成功")
+        }
+    } catch (e: IOException) {
+        Log.d(TAG, "创建失败：${e.message}")
+    } finally {
+        closeIO(os)
+    }
 
 ```
 
@@ -205,16 +203,16 @@ MediaProvider
 通过ContentResolver.query接口查询文件Uri
 
 ```
-        val external = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val selection = "${MediaStore.Images.Media.DISPLAY_NAME}=?"
-        val args = arrayOf("Image.png")
-        val projection = arrayOf(MediaStore.Images.Media._ID)
-        val cursor = contentResolver.query(external, projection, selection, args, null)
-        if (cursor != null && cursor.moveToFirst()) {
-            queryUri = ContentUris.withAppendedId(external, cursor.getLong(0))
-            Log.d(TAG, "查询成功，Uri路径$queryUri")
-            cursor.close()
-        }
+    val external = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    val selection = "${MediaStore.Images.Media.DISPLAY_NAME}=?"
+    val args = arrayOf("Image.png")
+    val projection = arrayOf(MediaStore.Images.Media._ID)
+    val cursor = contentResolver.query(external, projection, selection, args, null)
+    if (cursor != null && cursor.moveToFirst()) {
+        queryUri = ContentUris.withAppendedId(external, cursor.getLong(0))
+        Log.d(TAG, "查询成功，Uri路径$queryUri")
+        cursor.close()
+    }
 
 ```
 
@@ -222,11 +220,11 @@ MediaProvider
 通过ContentResolver.query查询得到的Uri之后，可以通过contentResolver.openFileDescriptor，根据文件描述符选择对应的打开方式。"r"表示读，"w"表示写
 
 ```
-        var pfd: ParcelFileDescriptor? = null
-        try {
-            pfd = contentResolver.openFileDescriptor(queryUri!!, "r")
-            if (pfd != null) {
-                val bitmap = BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor)
+    var pfd: ParcelFileDescriptor? = null
+    try {
+        pfd = contentResolver.openFileDescriptor(queryUri!!, "r")
+        if (pfd != null) {
+            val bitmap = BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor)
                 imageIv.setImageBitmap(bitmap)
             }
         } catch (e: IOException) {
@@ -238,7 +236,7 @@ MediaProvider
 或者访问Thumbnail，通过ContentResolver.loadThumbnail,传入size，返回指定大小的缩略图
 
 ```
-     getContentResolver().loadThumbnail(uri,Size(640, 480), null)
+    getContentResolver().loadThumbnail(uri,Size(640, 480), null)
 ```
 Native访问文件
 * 通过openFileDescriptor返回ParcelFileDescriptor
@@ -261,35 +259,34 @@ int fd = parcelFd.detachFd();
 * 2.需要`catch RecoverableSecurityException`，由MediaProvider弹出弹框给用户选择是否允许APP修改或删除图片/视频/音频文件。用户操作的结果，将通过onActivityResult回调返回到APP。如果用户允许，APP将获得该Uri的修改权限，直到设备重启。
 
 ```
-            //首先判断是否有READ_EXTERNAL_STORAGE权限
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                //这里的img 是我相册里的，如果运行demo，可以换成你自己的
-                val queryUri = queryUri("IMG_20191106_223612.jpg")
-                var os: OutputStream? = null
-                try {
-                    queryUri?.let { uri ->
-                        os = contentResolver.openOutputStream(uri)
-                    }
-
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                } catch (e1: RecoverableSecurityException) {
-                    e1.printStackTrace()
-                    //捕获 RecoverableSecurityException异常，发起请求
-                    try {
-                        startIntentSenderForResult(
-                            e1.userAction.actionIntent.intentSender,
-                            SENDER_REQUEST_CODE,
-                            null,
-                            0,
-                            0,
-                            0
-                        )
-                    } catch (e2: IntentSender.SendIntentException) {
-                        e2.printStackTrace()
-                    }
-                }
+    //首先判断是否有READ_EXTERNAL_STORAGE权限
+    if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        //这里的img 是我相册里的，如果运行demo，可以换成你自己的
+        val queryUri = queryUri("IMG_20191106_223612.jpg")
+        var os: OutputStream? = null
+        try {
+            queryUri?.let { uri ->
+                os = contentResolver.openOutputStream(uri)
             }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e1: RecoverableSecurityException) {
+            e1.printStackTrace()
+            //捕获 RecoverableSecurityException异常，发起请求
+            try {
+                startIntentSenderForResult(
+                    e1.userAction.actionIntent.intentSender,
+                    SENDER_REQUEST_CODE,
+                    null,
+                    0,
+                    0,
+                    0
+                )
+            } catch (e2: IntentSender.SendIntentException) {
+                e2.printStackTrace()
+            }
+        }
+    }
 ```
 
 ![media修改](https://user-gold-cdn.xitu.io/2019/11/7/16e445b02e3a1dd8?w=1080&h=1920&f=png&s=267376)
@@ -312,16 +309,16 @@ SAF本地存储服务的围绕 DocumentsProvider实现的，通过Intent调用Do
 
 ```
 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-         // Filter to only show results that can be "opened", such as a
-        // file (as opposed to a list of contacts or timezones)
-        addCategory(Intent.CATEGORY_OPENABLE)
+     // Filter to only show results that can be "opened", such as a
+    // file (as opposed to a list of contacts or timezones)
+    addCategory(Intent.CATEGORY_OPENABLE)
 
-         // Filter to show only images, using the image MIME data type.
-         // If one wanted to search for ogg vorbis files, the type would be "audio/ogg".
-         // To search for all documents available via installed storage providers,
-         // it would be "*/*".
-        type = "image/*"
-    }
+     // Filter to show only images, using the image MIME data type.
+     // If one wanted to search for ogg vorbis files, the type would be "audio/ogg".
+     // To search for all documents available via installed storage providers,
+     // it would be "*/*".
+    type = "image/*"
+}
     startActivityForResult(intent, REQUEST_CODE_FOR_SINGLE_FILE)
 ```
 ### 3.3.2 使用SAF创建文件
@@ -539,6 +536,7 @@ values.clear()
 values.put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/sl/sl2")
 contentResolver.update(insertUri,values,null,null)
 ```
+
 
 ## 4 sample
 [sample Github地址](https://github.com/songlongGithub/scoped_storage_sample)
